@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:broker="http://activemq.apache.org/schema/core"
+	xmlns:cxf="http://camel.apache.org/schema/cxf"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd 
+        http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
+        http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+        
+    <import resource="bean-definitions.xml"/>
+    
+	<!-- Servicio que permite exponer una interface socket para que sea consumida y enviada a un SOAP request-->
+	<camelContext xmlns="http://camel.apache.org/schema/spring"  trace="true">
+	
+		<!-- Ruta principal que habilita un consumidor de cola de mensajeria-->
+		<route>
+			<to uri="activemq:queue:wsh.activemq.from" />
+		 	<to uri="activemq:queue:wsh.activemq.to?disableReplyTo=true" />
+		</route>
+		
+		<!-- Ruta secundaria que obtene el mensaje de la cola mq y envio del mensaje al servicio-->
+		<route>
+			<from uri="activemq:queue:wsh.activemq.to" />
+		 	<log message="Mensaje procesado exitosamente: ${body}"/>
+		</route>
+	</camelContext>
+</beans>

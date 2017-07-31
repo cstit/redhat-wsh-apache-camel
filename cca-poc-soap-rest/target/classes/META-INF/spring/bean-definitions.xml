@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <bean id="kcAdapterConfig" class="org.keycloak.representations.adapters.config.AdapterConfig">
+        <property name="realm" value="master"/>
+        <property name="resource" value="admin-camel-endpoint"/>
+        <property name="bearerOnly" value="true"/>
+        <property name="authServerUrl" value="http://localhost:8080/auth" />
+        <property name="sslRequired" value="EXTERNAL"/>
+    </bean>
+
+    <bean id="keycloakAuthenticator" class="org.keycloak.adapters.jetty.KeycloakJettyAuthenticator">
+        <property name="adapterConfig" ref="kcAdapterConfig"/>
+    </bean>
+    
+   
+    <bean id="constraint" class="org.eclipse.jetty.util.security.Constraint">
+        <property name="name" value="Customers"/>
+        <property name="roles">
+            <list>
+                <value>admin</value>
+            </list>
+        </property>
+        <property name="authenticate" value="true"/>
+        <property name="dataConstraint" value="0"/>
+    </bean>
+
+    <bean id="constraintMapping" class="org.eclipse.jetty.security.ConstraintMapping">
+        <property name="constraint" ref="constraint"/>
+        <property name="pathSpec" value="/*"/>
+    </bean>
+    
+     
+	<bean id="securityHandlerRest" class="org.eclipse.jetty.security.ConstraintSecurityHandler">
+	    <property name="authenticator" ref="keycloakAuthenticator" />
+	    <property name="constraintMappings">
+	        <list>
+	            <ref bean="constraintMapping" />
+	        </list>
+	    </property>
+	    <property name="authMethod" value="BASIC"/>
+	    <property name="realmName" value="does-not-matter"/>
+	</bean>
+	
+	<bean id="sessionHandlerRest" class="org.keycloak.adapters.jetty.spi.WrappingSessionHandler">
+	    <property name="handler" ref="securityHandlerRest" />
+	</bean>
+	
+</beans>

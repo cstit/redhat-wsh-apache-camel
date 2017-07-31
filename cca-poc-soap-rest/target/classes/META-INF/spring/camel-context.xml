@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+        
+	<camelContext xmlns="http://camel.apache.org/schema/spring" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tran="http://www.cca.cl/transform/">
+
+	    <route>
+	    	<from uri="cxf:http://localhost:8888/CCA/WS_Contexto/movCuenta?wsdlURL=etc/wsdl/consultaCuentas2File.wsdl&amp;dataFormat=MESSAGE" />		
+			<convertBodyTo type="java.lang.String"/>
+			
+			<setHeader headerName="param1"><xpath resultType="java.lang.String">/soapenv:Envelope/soapenv:Body/tran:consultaCuentas2/in1/text()</xpath></setHeader>
+			<setHeader headerName="param2"><xpath resultType="java.lang.String">/soapenv:Envelope/soapenv:Body/tran:consultaCuentas2/in2/text()</xpath></setHeader>
+			<setHeader headerName="param3"><xpath resultType="java.lang.String">/soapenv:Envelope/soapenv:Body/tran:consultaCuentas2/in3/text()</xpath></setHeader>
+
+			<to uri="velocity:velocity/request.vm"/>
+			
+			<log message="velocity result: ${body}"/>
+
+			<!--<to uri="restlet:http://192.168.124.53:8080/consultaCuentas2/cca/rbi/movCuenta?restletMethod=post" />-->
+			<to uri="restlet:http://jsonplaceholder.typicode.com/posts?restletMethod=post" />
+			
+			<setHeader headerName="paramOut1"><jsonpath>$.id</jsonpath></setHeader>
+			
+			<to uri="velocity:velocity/response.vm"/>
+	    </route>
+	</camelContext>
+
+</beans>

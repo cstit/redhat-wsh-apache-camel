@@ -1,0 +1,8 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tran="http://www.cca.cl/transform/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <tran:consultaCuentas2Response>
+         <out>${headers.paramOut1}</out>
+      </tran:consultaCuentas2Response>
+   </soapenv:Body>
+</soapenv:Envelope>

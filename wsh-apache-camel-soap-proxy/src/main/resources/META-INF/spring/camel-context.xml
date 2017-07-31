@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cxf="http://camel.apache.org/schema/cxf"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd 
+        http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd">
+      
+	<!-- Proyecto apache camel que permite realizar un proxy entre servicios del tipo SOAP -->
+	<camelContext xmlns="http://camel.apache.org/schema/spring" >
+		
+		<!-- Ruta camel que expone un servicio SOAP basado en una publicación del mismo tipo-->
+		<route streamCache="true">
+			
+			<from uri="cxf:http://localhost:8877/globalweather.asmx?wsdlURL=http://www.dneonline.com/calculator.asmx?wsdl&amp;serviceName={http://tempuri.org/}Calculator&amp;portName={http://tempuri.org/}CalculatorSoap&amp;dataFormat=MESSAGE" />		
+			<to uri="cxf:http://www.dneonline.com/calculator.asmx?dataFormat=MESSAGE" />
+			
+		</route>
+				
+	</camelContext>
+
+</beans>

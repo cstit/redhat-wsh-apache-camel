@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:broker="http://activemq.apache.org/schema/core"
+	xmlns:cxf="http://camel.apache.org/schema/cxf"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd 
+        http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
+        http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+        
+    <import resource="bean-definitions.xml"/>
+    
+	<camelContext xmlns="http://camel.apache.org/schema/spring">
+	
+		<!-- Ruta principal que habilita el socket a ser consumido-->
+		<route>
+			<from uri="netty4:tcp://localhost:8022?textline=true&amp;disconnect=true&amp;decoderMaxLineLength=2048"/>
+		 	
+		 	<bean ref="ajustMessageBean" method="ajustNullsValues" />
+		 	
+		 	<log message="nueva cabecera: ${headers}">
+		</route>
+		
+	</camelContext>
+</beans>

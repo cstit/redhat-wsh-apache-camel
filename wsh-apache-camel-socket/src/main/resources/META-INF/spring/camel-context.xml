@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:broker="http://activemq.apache.org/schema/core"
+	xmlns:cxf="http://camel.apache.org/schema/cxf"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd 
+        http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
+        http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+        
+    <import resource="bean-definitions.xml"/>
+    
+	<!-- Servicio que permite exponer una interface socket para que sea consumida y enviada a un SOAP request-->
+	<camelContext xmlns="http://camel.apache.org/schema/spring">
+	
+		<!-- Permite capturar cualquier error que ocurra dentro del flujo, incluso la caida del servicio SOAP y registrar el mensaje en DLQ-->
+		<onException>
+			    <exception>java.lang.Exception</exception>
+			    <handled><simple>true</simple></handled>
+			    <to uri="activemq:queue:poc.socker.sii.ws.DLQ?disableReplyTo=true" />
+			    <log message="Mensaje procesado con errores: ${body}"/>
+		</onException>
+		
+		<!-- Ruta principal que habilita el socket a ser consumido-->
+		<route>
+			<from uri="netty4:tcp://localhost:8011?textline=true&amp;disconnect=true&amp;decoderMaxLineLength=2048"/>
+		 	<to uri="activemq:queue:poc.socker.sii.ws?disableReplyTo=true" />
+		 	<setHeader headerName="NettyConstants.NETTY_CLOSE_CHANNEL_WHEN_COMPLETE"><constant>true</constant></setHeader>
+		</route>
+		
+		<!-- Ruta secundaria que obtene el mensaje de la cola mq y envio del mensaje al servicio-->
+		<route>
+			<from uri="activemq:queue:poc.socker.sii.ws" />
+
+			<to uri="cxf:https://ws2.sii.cl/BELOPERADORWSCERT/services/BeloperadorServiceEndpoint?dataFormat=MESSAGE" />		
+		 	<convertBodyTo type="java.lang.String"/>
+		 	<log message="Mensaje procesado exitosamente: ${body}"/>
+		</route>
+	</camelContext>
+</beans>

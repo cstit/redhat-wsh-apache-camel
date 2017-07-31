@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+        
+    <import resource="bean-definitions.xml"/>
+
+	
+	<!-- Servicio que permite generar una solicitud rest con oauth2 integrado al producto Redhat SSO-->
+	<camelContext xmlns="http://camel.apache.org/schema/spring">
+
+		<!-- Definición del servicio expuesto a través de jetty-->
+	    <restConfiguration component="jetty" contextPath="/consultaCuentas2" port="8484">
+	        <endpointProperty key="handlers" value="sessionHandlerRest"></endpointProperty>
+	        <endpointProperty key="matchOnUriPrefix" value="true"></endpointProperty>
+	    </restConfiguration>
+
+	    <rest path="/cca/rbi/movCuenta" >
+	        <post uri="/" outType="java.lang.String">
+	            <to uri="direct:justDirect" />
+	        </post>
+	    </rest>
+
+
+		<!-- Ruta que expone un servicio rest, trabajando de proxy como respuesta al servicio original sin seguridad -->
+	    <route id="justDirect">
+	        <from uri="direct:justDirect"/>
+	        <log message="RestDSL correctly invoked ${body}"/>
+	        
+			<to uri="restlet:http://jsonplaceholder.typicode.com/posts?restletMethod=post" />
+			
+<!-- 			http://camel.apache.org/how-to-avoid-sending-some-or-all-message-headers.html -->
+			
+	    </route>
+	</camelContext>
+
+</beans>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:broker="http://activemq.apache.org/schema/core"
+	xmlns:cxf="http://camel.apache.org/schema/cxf"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd 
+        http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
+        http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+        
+    <import resource="bean-definitions.xml"/>
+    
+	<camelContext xmlns="http://camel.apache.org/schema/spring" trace="true">
+	
+		<!-- Ruta que permite exponer un servicio rest sobre un puerto en particular-->
+		<route>
+			<from uri="restlet:http://localhost:8889/wsfuse/api/command/create?restletMethod=post" />
+			<log message="resultado de la invocación del servicio: ${body}"/>
+			<from uri="restlet:http://localhost:8890/wsfuse/api/command/create?restletMethod=post" />
+		</route>
+		
+		
+		<!-- Ruta que permite consumir desde un puerto en particular-->
+		<route>
+			<from uri="restlet:http://localhost:8890/wsfuse/api/command/create?restletMethod=post" />
+			<log message="resultado de la invocación del servicio: ${body}"/>
+		</route>	
+	
+	</camelContext>
+</beans>
